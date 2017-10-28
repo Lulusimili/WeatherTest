@@ -1,4 +1,4 @@
-package com.example.administrator.weathertest.mvp.view;
+package com.example.administrator.weathertest.view;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;

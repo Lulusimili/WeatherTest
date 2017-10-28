@@ -1,5 +1,7 @@
 package com.example.administrator.weathertest.db;
 
+import com.google.gson.annotations.SerializedName;
+
 import org.litepal.crud.DataSupport;
 
 /**
@@ -7,13 +9,17 @@ import org.litepal.crud.DataSupport;
  */
 
 public class County extends DataSupport {
-    private int id;
+
+    private int ID;
+    @SerializedName("name")
     private String countyName;
+    @SerializedName("weather_id")
     private String weatherId;
+    @SerializedName("id")
     private int cityId;
 
-    public int getId() {
-        return id;
+    public int getID() {
+        return ID;
     }
 
     public String getCountyName() {
@@ -28,8 +34,8 @@ public class County extends DataSupport {
         return cityId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setID(int ID) {
+        this.ID = ID;
     }
 
     public void setCityId(int cityId) {

@@ -1,5 +1,6 @@
 package com.example.administrator.weathertest.bean;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -8,12 +9,11 @@ import java.util.List;
  */
 
 public class RootWeather {
-    private List<Weather> weather;
-    public void setweather(List<Weather>weather) {
+    private ArrayList<Weather> weather;
+    public void setweather(ArrayList<Weather>weather) {
         this.weather = weather;
     }
-    public List<Weather> getweather() {
+    public ArrayList<Weather> getweather() {
         return weather;
     }
-
 }
