@@ -17,9 +17,6 @@ import com.example.administrator.weathertest.R;
 import com.example.administrator.weathertest.db.City;
 import com.example.administrator.weathertest.db.County;
 import com.example.administrator.weathertest.db.Province;
-import com.example.administrator.weathertest.db.RootCity;
-import com.example.administrator.weathertest.db.RootCounty;
-import com.example.administrator.weathertest.db.RootProvince;
 import com.example.administrator.weathertest.utils.HttpUtil;
 
 import org.litepal.crud.DataSupport;
@@ -54,7 +51,7 @@ public class ChooseFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.choose,container,false);
         title=view.findViewById(R.id.title);
         listView=view.findViewById(R.id.place_list);
@@ -62,14 +59,13 @@ public class ChooseFragment extends Fragment {
         arrayAdapter=new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_list_item_1,dataList);
         listView.setAdapter(arrayAdapter);
-        Log.d("呵呵哈哈哈","lllllll");
         return view;
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
+        queryProvince();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -94,12 +90,9 @@ public class ChooseFragment extends Fragment {
                 }
             }
         });
-        Log.d("哦哦哦哦哦","jjjjjjjjj");
-        queryProvince();
     }
     //查询全国所有省份
     public void queryProvince() {
-        Log.d("遍历省份","数据库查询");
             title.setText("中国");
             backButton.setVisibility(View.GONE);
             provinceList= DataSupport.findAll(Province.class);
@@ -121,6 +114,7 @@ public class ChooseFragment extends Fragment {
 
     //查询全国所有城市
     public void queryCity() {
+        Log.d("遍历城市","遍历城市");
         title.setText(provinceSelected.getProvinceName());
         backButton.setVisibility(View.VISIBLE);
         cityList=DataSupport.where("provinceId=?",String.
@@ -143,7 +137,7 @@ public class ChooseFragment extends Fragment {
     public void queryCounty() {
         title.setText(citySelected.getCityName());
         backButton.setVisibility(View.VISIBLE);
-        countyList=DataSupport.where("cityid=?",String.
+        countyList=DataSupport.where("cityId=?",String.
                 valueOf(citySelected.getID())).find(County.class);
         if(countyList.size()>0){
             dataList.clear();
@@ -162,16 +156,16 @@ public class ChooseFragment extends Fragment {
     }
 
     /*从服务器获取省份信息*/
-    private void queryProvinceFromServer( String baseUrl) {
-        Log.d("遍历省份","斤斤计较");
-        Observable<RootProvince> provinceObservable;
+    private void queryProvinceFromServer(String baseUrl) {
+        Observable<ArrayList<Province>> provinceObservable;
         provinceObservable = HttpUtil.sendHttpRequest(baseUrl).getProvinces();
         provinceObservable.observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
-                .map(new Func1<RootProvince, ArrayList<Province>>() {
+                .map(new Func1<ArrayList<Province>, ArrayList<Province>>() {
                     @Override
-                    public ArrayList<Province> call(RootProvince rootProvince) {
-                        return rootProvince.getProvinceList();
+                    public ArrayList<Province> call(ArrayList<Province> provinceArrayList) {
+                        Log.d("getProvinceList","hhh");
+                        return provinceArrayList ;
                     }
                 })
                 .subscribe(new Subscriber<ArrayList<Province>>() {
@@ -182,14 +176,13 @@ public class ChooseFragment extends Fragment {
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.d("TAG", "onError");
+                        Log.d("TAG", "出错了");
                     }
 
                     @Override
-                    public void onNext(ArrayList<Province> provinces) {
+                    public void onNext(final ArrayList<Province> provinces) {
                         for (Province province : provinces) {
                             province.save();
-                            Log.d("省份名字",province.getProvinceName());
                         }
                         queryProvince();
                     }
@@ -198,14 +191,15 @@ public class ChooseFragment extends Fragment {
 
     /*从服务器获取城市信息*/
     private void queryCityFromServer(String baseUrl,int provinceCode){
-        Observable<RootCity> cityObservable;
+        Log.d("服务器查询城市","fuqqii");
+        Observable<ArrayList<City>> cityObservable;
         cityObservable=HttpUtil.sendHttpRequest(baseUrl).getCities(provinceCode);
         cityObservable.observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
-                .map(new Func1<RootCity,ArrayList<City>>(){
+                .map(new Func1<ArrayList<City>,ArrayList<City>>(){
                     @Override
-                    public ArrayList<City> call(RootCity rootCity) {
-                        return rootCity.getCityList();
+                    public ArrayList<City> call(ArrayList<City> cities) {
+                        return cities;
                     }
                 })
                 .subscribe(new Subscriber<ArrayList<City>>() {
@@ -216,13 +210,15 @@ public class ChooseFragment extends Fragment {
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.d("TAG","onError");
+                        Log.d("服务器查询城市","出错了");
                     }
 
                     @Override
                     public void onNext(ArrayList<City> cities) {
                        for(City city:cities) {
+                           city.setProvinceId(provinceSelected.getID());
                            city.save();
+                           Log.d("服务器查询城市",city.getCityName());
                        }
                        queryCity();
                     }
@@ -233,14 +229,15 @@ public class ChooseFragment extends Fragment {
     /*从服务器获取县信息*/
     private void queryCountyFromServer(String baseUrl,
                                                     int provinceCode,int cityCode) {
-        Observable<RootCounty> countyObservable;
+        Log.d("服务器查县城","4");
+        Observable<ArrayList<County>> countyObservable;
         countyObservable = HttpUtil.sendHttpRequest(baseUrl).getCounties(provinceCode, cityCode);
         countyObservable.observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
-                .map(new Func1<RootCounty, ArrayList<County>>() {
+                .map(new Func1<ArrayList<County>, ArrayList<County>>() {
                     @Override
-                    public ArrayList<County> call(RootCounty rootCounty) {
-                        return rootCounty.getCountyList();
+                    public ArrayList<County> call(ArrayList<County > counties) {
+                        return counties;
                     }
                 })
                 .subscribe(new Subscriber<ArrayList<County>>() {
@@ -252,11 +249,13 @@ public class ChooseFragment extends Fragment {
                     @Override
                     public void onError(Throwable e) {
                         Log.d("TAG", "onError");
+                        Log.d("服务器查县城","出错了");
                     }
 
                     @Override
                     public void onNext(ArrayList<County> counties) {
                         for (County county:counties) {
+                            county.setCityId(citySelected.getID());
                             county.save();
                         }
                         queryCounty();
