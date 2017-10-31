@@ -15,7 +15,7 @@ public class Suggestion {
     @SerializedName("sport")
     public Sport sport;
     public class CarWash{
-        @SerializedName("tet")
+        @SerializedName("txt")
         public String info;
     }
     public class Comfort{
