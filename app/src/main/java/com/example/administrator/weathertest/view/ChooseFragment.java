@@ -1,4 +1,5 @@
 package com.example.administrator.weathertest.view;
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.app.ProgressDialog;
 import android.os.Bundle;
@@ -76,6 +77,13 @@ public class ChooseFragment extends Fragment {
                 else if(listNow==CITY_LIST_FLAG){
                     citySelected=cityList.get(position);
                     queryCounty();
+                }
+                else if (listNow==COUNTY_LIST_FLAG){
+                    String weatherId=countyList.get(position).getWeatherId();
+                    Intent intent=new Intent(getActivity(),ForecastActivity.class);
+                    intent.putExtra("weatherId",weatherId);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             }
         });
